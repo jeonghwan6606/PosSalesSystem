@@ -1,0 +1,462 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="pos">
+
+	<!-- 상품 조회 -->
+	<select id="selectProdOne" resultType="map" parameterType="String">
+		SELECT 
+		    *
+		FROM 
+		    PROD_TBL 
+		WHERE 
+		    BAR_CODE = #{barcode}
+	</select>
+	
+	<!-- 시재금등록 쿼리 -->
+	<insert id="InsertPosMoney" parameterType="java.util.Map">
+	    INSERT INTO 
+	    VAULT_CASH_TBL (
+	        TER_SER_NO, 
+	        DEP_PAY_DT, 
+	        DEP_PAY_TM, 
+	        DEP_PAY_TY, 
+	        CONTENTS, 
+	        AMT
+	    )
+	    VALUES (
+	        '1', 
+	        TO_CHAR(SYSDATE, 'YYYYMMDD'), 
+	        TO_CHAR(SYSTIMESTAMP, 'HH24MISSFF2'), 
+	        #{DEP_PAY_TY}, 
+	        #{CONTENTS}, 
+	        #{AMT}
+	    )
+	</insert>
+	<select id="calculatePos" parameterType="String" resultType="String">
+	     SELECT 
+	        SUM(
+	            CASE 
+	                WHEN DEP_PAY_TY = '1' THEN TO_NUMBER(AMT)
+	                WHEN DEP_PAY_TY = '2' THEN -TO_NUMBER(AMT)
+	                ELSE 0
+	            END
+	        ) AS TOTAL_AMOUNT
+	    FROM VAULT_CASH_TBL
+	    WHERE DEP_PAY_DT = TO_CHAR(SYSDATE, 'YYYYMMDD')
+	</select>
+	
+	<insert id="InsertSales" parameterType="java.util.Map">
+    <selectKey resultType="String" keyProperty="SALES_SER_NO" order="BEFORE">
+        SELECT SALES_ID_SEQ.NEXTVAL FROM dual
+    </selectKey>
+	    INSERT INTO SALES_TBL (
+	        SALES_DT, 
+	        SALES_SER_NO, 
+	        TER_NO, 
+	        TRANS_DT, 
+	        TRANS_TM, 
+	        MEMB_TY, 
+	        MEMB_SER_NO, 
+	        CANC_TY
+	    )
+	    VALUES (
+	        TO_CHAR(SYSDATE, 'YYYYMMDD'), 
+	        #{SALES_SER_NO}, 
+	        '1', 
+	        TO_CHAR(SYSDATE, 'YYYYMMDD'), 
+	        TO_CHAR(SYSDATE, 'HH24MISS'), 
+	        <choose>
+	            <when test="MEMB_NO != null and MEMB_NO != ''">
+	                '1',
+	                #{MEMB_NO}
+	            </when>
+	            <otherwise>
+	                '2',
+	                ' '
+	            </otherwise>
+	        </choose>, 
+	        ' '
+	    )
+	</insert>
+	
+	 <!-- 판매상품 등록 쿼리 -->
+    <insert id="InsertSalesProduct" parameterType="com.pos.vo.SalesProdVo">
+        INSERT INTO SALES_PROD_TBL (
+            SALES_DT, 
+            SALES_SER_NO, 
+            SER_NO, 
+            PROD_CD, 
+            QTY, 
+            SALES_PR, 
+            VAT, 
+            SALES_AMT, 
+            SALE_AMT, 
+            TAX_TY, 
+            TRANS_TY
+        )
+        VALUES (
+            TO_CHAR(SYSDATE, 'YYYYMMDD'), 
+            #{SALES_SER_NO}, 
+            #{SER_NO}, 
+            #{PROD_CD}, 
+            #{QTY}, 
+            #{SALES_PR}, 
+            ' ', 
+            #{SALES_AMT}, 
+            #{SALE_AMT}, 
+            '1', 
+            '1'
+        )
+    </insert>
+    
+    
+	<insert id="InsertSalesPayment" parameterType="com.pos.vo.SalesProdVo">
+	    INSERT INTO SALES_PAY_TBL (
+	        SALES_DT, 
+	        SALES_SER_NO, 
+	        SER_NO, 
+	        SALES_TY, 
+	        SALES_AMT
+	    )
+	    VALUES (
+	        TO_CHAR(SYSDATE, 'YYYYMMDD'), 
+	        #{SALES_SER_NO}, 
+	        #{SER_NO}, 
+	        '1', 
+	        #{SALES_AMT}
+	    )
+	</insert>
+	
+
+	<!-- 회원등록 쿼리 -->
+	<insert id="SimInsertCust" parameterType="java.util.Map">
+		INSERT INTO 
+			MEMB_TBL ( 
+			 	MEMB_SER_NO,
+				MEMB_NM, 
+				MOB_PH_NO, 	
+				ID_NO,
+				PERS_COP_TY			
+			)
+			VALUES
+			(
+				#{MEMB_SER_NO},
+				#{MEMB_NM}, 
+				#{MOB_PH_NO},
+				#{ID_NO},
+				'1'			
+			)
+	</insert>
+	
+	<!-- 고객 정보 조회 -->
+	
+	
+		
+	
+	
+	<!-- 고객 카운트-->
+	<select id="checkDuplicateCust" resultType="int" parameterType="java.util.Map">
+	    SELECT COUNT(*) FROM MEMB_TBL 
+	    WHERE PH_NO = #{MOB_PH_NO} OR MOB_PH_NO = #{MOB_PH_NO}
+	    <!-- 주민번호가 주어진 경우 주민번호도 검색 조건에 추가 -->
+	    <if test="MEMB_SER_NO != null">
+	        OR MEMB_SER_NO = #{MEMB_SER_NO}
+	    </if>
+	    <if test="ID_NO != null">
+	        OR ID_NO = #{ID_NO}
+	    </if>
+	    <if test="BUSI_NO != null">
+	     	OR BUSI_NO = #{BUSI_NO}
+	    </if>
+	</select>
+		
+
+	<select id="selectSales" resultType="java.util.Map" parameterType="java.util.Map">
+	    SELECT 
+	        SALES_TBL.SALES_SER_NO, 
+	        SALES_TBL.MEMB_SER_NO, 
+	        SALES_TBL.MEMB_TY, 
+	        SALES_PAY_TBL.SALES_TY, 
+	        SALES_TBL.TRANS_TM, 
+	        SALES_TBL.TRANS_DT,  
+	        SALES_TBL.CANC_TY            
+	    FROM SALES_TBL
+	    LEFT JOIN MEMB_TBL ON SALES_TBL.MEMB_SER_NO = MEMB_TBL.MEMB_SER_NO
+	    LEFT JOIN SALES_PAY_TBL ON SALES_TBL.SALES_SER_NO = SALES_PAY_TBL.SALES_SER_NO
+	    LEFT JOIN SALES_PROD_TBL ON SALES_PROD_TBL.SER_NO = SALES_PAY_TBL.SER_NO AND SALES_PROD_TBL.SALES_SER_NO = SALES_PAY_TBL.SALES_SER_NO
+	    LEFT JOIN PROD_TBL ON PROD_TBL.PROD_CD = SALES_PROD_TBL.PROD_CD 
+	    WHERE 1 = 1
+	       	
+	    <if test="salesTy != null and salesTy !=''">
+	        AND SALES_PAY_TBL.SALES_TY = #{salesTy}
+	    </if>	
+	    <if test="phNo != null and phNo !=''">
+	        AND (MEMB_TBL.MOB_PH_NO LIKE '%${phNo}%' OR MEMB_TBL.PH_NO LIKE '%${phNo}%')
+	    </if>
+	    <if test="barcode != null and barcode !=''">
+	        AND PROD_TBL.BAR_CODE LIKE '%${barcode}%'
+	    </if>
+	    <if test="transDtStart != null and transDtEnd != null">
+	        AND SALES_TBL.TRANS_DT BETWEEN #{transDtStart} AND #{transDtEnd}
+	    </if>
+	      
+	    GROUP BY 
+	        SALES_TBL.SALES_SER_NO,
+	        SALES_TBL.MEMB_SER_NO, 
+	        SALES_TBL.MEMB_TY, 
+	        SALES_PAY_TBL.SALES_TY, 
+	        SALES_TBL.TRANS_TM, 
+	        SALES_TBL.TRANS_DT,
+	        SALES_TBL.CANC_TY  
+	    ORDER BY
+	        SALES_TBL.TRANS_DT DESC,  -- TRANS_DT 기준으로 최근 순으로 정렬
+	        SALES_TBL.TRANS_TM DESC   -- TRANS_TM 기준으로 최근 순으로 정렬
+	</select>		
+	
+	<!-- 판매상품 상세 조회 -->
+	<select id="selectSalesProduct" resultType="java.util.Map" parameterType="String">
+		SELECT 
+			SALES_PROD_TBL.*,
+			PROD.PROD_NM AS PROD_NM,
+			PROD.BAR_CODE
+		FROM SALES_PROD_TBL
+		LEFT JOIN PROD_TBL PROD ON PROD.PROD_CD = SALES_PROD_TBL.PROD_CD
+		LEFT JOIN SALES_PAY_TBL ON SALES_PAY_TBL.SALES_SER_NO = SALES_PROD_TBL.SALES_SER_NO AND SALES_PAY_TBL.SER_NO = SALES_PROD_TBL.SER_NO
+		WHERE SALES_PROD_TBL.SALES_SER_NO = #{serNo}	
+		<if test="salesTy != null and salesTy !=''">
+        	AND SALES_PAY_TBL.SALES_TY = #{salesTy}
+        </if>		
+	</select>
+	
+	<select id="getCustList" resultType="java.util.Map" parameterType="map">
+	    SELECT
+	        CUST.*,
+	        BILL.BNK_CD AS BNK_CD,
+	        BILL.BILL_ADR1 AS BILL_ADR1,
+	        BILL.BILL_ADR2 AS BILL_ADR2,
+	        BILL.STL_ACT AS STL_ACT,
+	        BNK_NM_CODE_NM.CODE_NM AS BNK_NM
+	    FROM
+	        CUST
+	        LEFT JOIN BILL ON CUST.CUST_NO = BILL.CUST_NO
+	        LEFT JOIN COMM_CODE_DTL BNK_NM_CODE_NM ON BNK_NM_CODE_NM.GROUP_CD = 'C003' AND BILL.BNK_CD = BNK_NM_CODE_NM.CODE
+	    WHERE
+	        CUST.HG_NM = #{hgNm}
+	        AND CUST.BIRTH_D = #{birthD}
+	        <if test="hdpNo != null and hdpNo != ''">
+	        AND CUST.HDP_NO = #{hdpNo}
+	        </if>
+	</select>	
+	<!-- 판매 취소 관련 쿼리 -->
+	<update id="updateCancelTypeForFullCancel">
+	    UPDATE SALES_TBL
+	    SET CANC_TY = 1
+	    WHERE SALES_SER_NO = #{salesSerNo}
+	</update>
+	
+	<select id="countSalesProdByTransTy" parameterType="String" resultType="int">
+	    SELECT COUNT(*)
+		FROM SALES_PROD_TBL
+		WHERE SALES_SER_NO = #{salesSerNo}
+		AND (TRANS_TY = '1' OR TRANS_TY = '2')
+	</select>
+	<select id="selectPayAmtBySerNo" parameterType="java.util.Map" resultType="String">
+	    SELECT SALES_AMT
+	    FROM SALES_PAY_TBL
+	    WHERE
+	    	SALES_SER_NO = #{salesSerNo} 	
+	     AND SER_NO = #{serNo}
+	     AND SALES_TY = '1'
+	</select>
+	
+	<update id="updateCancelType">
+	    UPDATE SALES_PROD_TBL
+	    SET TRANS_TY = 3
+	    WHERE SALES_SER_NO = #{salesSerNo}
+	     <if test="serNo != null and serNo != ''">
+	        AND SER_NO = #{serNo}
+	    </if>
+	</update>
+	<select id="selectSerNoByTransTy" resultType="int" parameterType="map">
+	   SELECT COUNT(*)
+		FROM SALES_PROD_TBL
+		WHERE (CAST(TRANS_TY AS NUMBER) = 3 OR CAST(TRANS_TY AS NUMBER) = 2)
+		AND SALES_SER_NO = #{salesSerNo}
+		AND SER_NO = #{serNo}
+	</select>
+	<!-- 거래처 조회 -->
+	<select id="selectClient" resultType="map" parameterType="map">
+	    SELECT 
+	        *
+	        
+	    FROM 
+	        CLIENT_TBL
+	    <where>
+	       1=1
+	        <if test="CLIENT_NM != null and CLIENT_NM != ''">
+	           AND (CLIENT_NM LIKE '%' || #{CLIENT_NM} || '%' 
+            		OR CLIENT_NO LIKE '%' || #{CLIENT_NM} || '%')
+	        </if>
+	    </where>
+	</select>
+	<select id="selectProd" resultType="com.pos.vo.ProdVo" parameterType="String">
+		SELECT 
+		    *
+		FROM 
+		    PROD_TBL 
+		WHERE 
+		    BAR_CODE = #{barcode}
+	</select>
+	<select id="selectProductType" parameterType="java.util.Map" resultType="java.util.Map">
+	    SELECT 
+	    	PROD_CLS_CD,
+	    	PROD_CLS_NM
+	    FROM PROD_CLS_TBL
+	    ORDER BY PROD_CLS_CD ASC
+	</select>
+	<select id="getMaxProdCd" parameterType ="string" resultType="int">
+        SELECT COALESCE(MAX(TO_NUMBER(PROD_CD)), 0) + 1 AS PROD_SEQ_NO FROM PROD_TBL 
+    </select>
+    <insert id="insertProduct" parameterType="java.util.Map">
+	    INSERT INTO PROD_TBL (
+	        PROD_CD, 
+	        PROD_CLS_CD, 
+	        PROD_NM, 
+	        PROD_ENG_NM, 
+	        ORIG_NAT, 
+	        PURC_PR, 
+	        SELL_PR, 
+	        BAR_CODE, 
+	        CLIENT_NO, 
+	        COLOR, 
+	        PROD_SIZE, 
+	        SALE_OR_NOT, 
+	        SALE_PR,
+	        TAXAT_TY
+	    )
+	    VALUES (
+	        #{PROD_CD}, 
+	        #{PROD_CLS_CD}, 
+	        #{PROD_NM}, 
+	        #{PROD_ENG_NM}, 
+	        #{ORIG_NAT}, 
+	        #{PURC_PR}, 
+	        #{SELL_PR}, 
+	        #{BAR_CODE}, 
+	        #{CLIENT_NO}, 
+	        #{COLOR}, 
+	        #{PROD_SIZE},	        
+	        #{SALE_OR_NOT}, 
+	        #{SALE_PR},
+	        #{TAX_TY}
+	    )
+	</insert>
+	<select id="checkDuplicateProduct" resultType="int" parameterType="java.util.Map">
+	    SELECT COUNT(*) FROM PROD_TBL 
+	    WHERE BAR_CODE = #{BAR_CODE}
+	    OR PROD_CD = #{PROD_CD}
+	</select>
+	<select id="getMaxClient" parameterType ="string" resultType="int">
+        SELECT COALESCE(MAX(TO_NUMBER(CLIENT_NO)), 0) + 1 AS CLIENT_SEQ_NO FROM CLIENT_TBL 
+    </select>
+    <select id="checkDuplicateClient" resultType="int" parameterType="java.util.Map">
+	    SELECT COUNT(*) FROM CLIENT_TBL 
+	    WHERE CLIENT_NO = #{CLIENT_NO}
+	    OR BUSI_NO = #{BUSI_NO}
+	</select>
+	<insert id="insertClient" parameterType="java.util.Map">
+	    INSERT INTO CLIENT_TBL (
+	        CLIENT_NO, 
+	        CLIENT_NM, 
+	        BUSI_NO, 
+	        PERS_COP_TY, 
+	        ID_NO, 
+	        REPRES_NM, 
+	        PH_NO, 
+	        POST_NO, 
+	        ADDR
+	    )
+	    VALUES (
+	        #{CLIENT_NO}, 
+	        #{CLIENT_NM}, 
+	        #{BUSI_NO}, 
+	        #{PERS_COP_TY}, 
+	        #{ID_NO}, 
+	        #{REPRES_NM}, 
+	        #{PH_NO}, 
+	        #{POST_NO}, 
+	        #{ADDR}
+	    )
+	</insert>
+	
+	<select id="selectMembList" resultType="java.util.Map" parameterType="map">
+	    SELECT
+	        *
+	    FROM
+	        MEMB_TBL
+	    WHERE    
+	    1=1  
+	    <!-- 전화번호가 주어진 경우에만 조건 추가 -->
+	        <if test="PH_NO != null and PH_NO != ''">
+			    AND (MOB_PH_NO LIKE '%' || #{PH_NO} || '%' OR PH_NO LIKE '%' || #{PH_NO} || '%' 
+			     OR MEMB_NM LIKE '%' || #{PH_NO} || '%' )
+			</if> 
+	</select>
+	<select id="countMemberByMembSerNo" resultType="int" parameterType="String">
+	    SELECT COUNT(*)
+	    FROM MEMB_TBL
+	    WHERE MEMB_SER_NO = #{membSerNo}
+	</select>
+	<select id="getMaxMembNo" parameterType ="string" resultType="int">
+        SELECT COALESCE(MAX(TO_NUMBER(MEMB_SER_NO)), 0) + 1 AS MEMB_SEQ_NO FROM MEMB_TBL 
+    </select>
+	<select id="selectSerNoBySalesSerNo" parameterType="String" resultType="String">
+	    SELECT SER_NO
+	    FROM SALES_PROD_TBL
+	    WHERE SALES_SER_NO = #{salesSerNo}
+	    AND TRANS_TY = '1'
+	</select>
+	<select id="getSalesAmtBySerNo" parameterType="map" resultType="String">
+	    SELECT sales_amt
+	    FROM SALES_PAY_TBL
+	    WHERE SER_NO = #{serNo}
+	    AND SALES_SER_NO = #{salesSerNo}
+	     <if test="salesTy != null and salesTy != ''">
+	    	AND SALES_TY = #{salesTy}
+	    </if> 
+	</select>
+	<insert id="insertCust" parameterType="java.util.Map">
+	    INSERT INTO MEMB_TBL (
+	        MEMB_SER_NO,
+	        PERS_COP_TY,
+	        ID_NO,
+	        BUSI_NO,
+	        MEMB_NM,
+	        MEMB_ENG_NM,
+	        BIR_DAY,
+	        MOB_PH_NO,
+	        PH_NO,
+	        POST_NO,
+	        ADDR_1,
+	        ADDR_2,
+	        EMAIL
+	       
+	    )
+	    VALUES (
+	        #{MEMB_SER_NO},
+	        #{PERS_COP_TY},
+	        #{ID_NO},
+	        #{BUSI_NO},
+	        #{MEMB_NM},
+	        #{MEMB_ENG_NM},
+	        #{BIR_DAY},
+	        #{MOB_PH_NO},
+	        #{PH_NO},
+	        #{POST_NO},
+	        #{ADDR1},
+	        #{ADDR2},
+	        #{EMAIL}
+	        
+	    )
+	</insert>
+</mapper>
