@@ -56,7 +56,9 @@ public interface PosDao {
     
     List<String> selectSerNoBySalesSerNo(String salesSerNo);
     String getSalesAmtBySerNo(Map<String, Object> paramMap);
-	/*
+	
+    void updatedMembPoint(Map<String,String> map);
+    /*
 	// 회원등록
 	int InsertCust(MembVo memVo);
 	// 거래처 등록

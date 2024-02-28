@@ -52,7 +52,33 @@ public class PosController {
 
 	@RequestMapping("/PosMain.do")
 	public UIView posMain(HttpServletRequest req, HttpServletResponse res, DataRequest dataReq) throws Exception {
-		return new UIView("/ui/PosMain.clx");
+	    // 취소된 품목들 배열을 추출
+	    String cancelledItemsJson = req.getParameter("cancelledItems");
+	    List<Map<String, Object>> cancelledItemsList = new ArrayList<>();
+	    if (cancelledItemsJson != null) {
+	        JSONArray cancelledItemsArray = new JSONArray(cancelledItemsJson);
+	        // JSONArray를 List<Map<String, Object>>로 변환
+	        for (int i = 0; i < cancelledItemsArray.length(); i++) {
+	            JSONObject item = cancelledItemsArray.getJSONObject(i);
+	            Map<String, Object> itemMap = new HashMap<>();
+	            itemMap.put("barcode", item.getString("barcode"));
+	            itemMap.put("qty", item.getInt("qty"));
+	            // 필요한 항목들을 추가로 처리
+	            cancelledItemsList.add(itemMap);
+	        }
+	        
+	     // 디버깅을 위한 출력
+		    System.out.println("Cancelled Items: " + cancelledItemsList);
+		    
+		    // 리스트를 다시 맵으로 래핑하여 initParam으로 전달
+		    Map<String, List<Map<String, Object>>> initParams = new HashMap<>();
+		    initParams.put("cancelledItems", cancelledItemsList);
+		    
+		    // 포워드하여 PosMain.clx로 요청 전달
+		    return new UIView("/ui/PosMain.clx", initParams);  
+	    } 
+	    // 포워드하여 PosMain.clx로 요청 전달
+	    return new UIView("/ui/PosMain.clx");
 	}
 
 	@RequestMapping("/GetProdOne.do")
@@ -171,7 +197,8 @@ public class PosController {
 		
 		String changeAmount = requestData.getString("changeAmount");
 		String receivedAmount = requestData.getString("receivedAmount");
-
+		String usedPoint = requestData.getString("usedPoint");
+		
 		JSONArray selectedDataArray = requestData.getJSONArray("selectedData");
 
 		List<Map<String, String>> selectedDataList = new ArrayList<Map<String, String>>();
@@ -196,6 +223,7 @@ public class PosController {
 		paramMap.put("MEMB_NO", membNo);
 		paramMap.put("CHANGE_AMOUNT", changeAmount);
 		paramMap.put("RECEIVED_AMOUNT", receivedAmount);
+		paramMap.put("USED_POINT", usedPoint);
 
 		// 디버깅을 위해 파라미터 데이터를 콘솔에 출력합니다.
 		System.out.println("Parameter Map: " + paramMap.toString());

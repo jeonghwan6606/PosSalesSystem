@@ -215,61 +215,12 @@ public class PosDaoImpl implements PosDao {
 	    public String getSalesAmtBySerNo(Map<String, Object> paramMap) {
 	        return sqlsession.selectOne("pos.getSalesAmtBySerNo", paramMap);
 	    }
-		/*
-		// 거래처등록
-		@Override
-		public int InsertClient(ClientVo clientVo) {
-			return sqlsession.insert("pos.InsertManagement", clientVo);
-		}
-		
-		// 상품등록
-		@Override
-		public int InsertProduct(ProdVo proVo) {
-		}
-		
-		
-		// 최종금액 
-		@Override
-		public int TotalMoney(VaultCashVo cashVo) {
-			return sqlsession.selectOne("pos.TotalMoney", cashVo);
-		}
-		
-		// 계산
-		@Override
-		public int InsertSales(SalesVo salesVo) {
-			return sqlsession.insert("pos.InsertSales", salesVo);
-		}
-		
-		//
-		@Override
-		public int InsertProd(SalesProdVo prodVo) {
-			return sqlsession.insert("pos.InsertSales", prodVo);
-		}
-		
-		//
-		@Override
-		public int InsertPay(SalesPayVo payVo) {
-			return sqlsession.insert("pos.InsertSales", payVo);
-		}
-		
-		// 날짜별 판매 조회
-		@Override
-		public List<Map<String, Object>> selectSales(List<Map<String, Object>> selectSales){
-			return sqlsession.selectList("pos.selectSales");
-					
-		}
-		// 판매상품 상세 조회
-		@Override
-		public List<Map<String, Object>> selectOne(List<Map<String, Object>> selectOne){
-			return sqlsession.selectOne("pos.selectOne");
-			
-		}
-		
-		// 고객 정보 조회
-		@Override
-		public List<Map<String, Object>> selectMember(List<Map<String, Object>> selectOne){
-			return sqlsession.selectOne("pos.selectMember");
-			
-		}
-		*/
+	    
+	    @Override
+		public void updatedMembPoint(Map<String, String> paramMap) {
+	    	
+	    	System.out.println(paramMap);
+			sqlsession.update("pos.updateMemberPoint", paramMap);
+			return ;
+	    }
 }

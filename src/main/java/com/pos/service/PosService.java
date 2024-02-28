@@ -46,11 +46,12 @@ public interface PosService {
 	 
 	 int selectSerNoByTransTy(String salesSerNo, String serNo);
 	 List<Map<String, Object>> selectMembList(Map<String, String> param);
-	  int countMemberByMembSerNo(String membSerNo);
+	 int countMemberByMembSerNo(String membSerNo);
 	  
-	  int getMaxMembNo(); 
+	 int getMaxMembNo(); 
 	  
-	  int insertCust(Map<String,String> map);
+	 int insertCust(Map<String,String> map);
+	 
 	/*
 	// 회원등록
 	String InsertPosCust(MembVo memVo);

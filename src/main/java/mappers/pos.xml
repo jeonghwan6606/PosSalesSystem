@@ -398,9 +398,10 @@
 	    1=1  
 	    <!-- 전화번호가 주어진 경우에만 조건 추가 -->
 	        <if test="PH_NO != null and PH_NO != ''">
-			    AND (MOB_PH_NO LIKE '%' || #{PH_NO} || '%' OR PH_NO LIKE '%' || #{PH_NO} || '%' 
-			     OR MEMB_NM LIKE '%' || #{PH_NO} || '%' )
-			</if> 
+	            AND (MOB_PH_NO LIKE '%' || #{PH_NO} || '%' OR PH_NO LIKE '%' || #{PH_NO} || '%' 
+	             OR MEMB_NM LIKE '%' || #{PH_NO} || '%' )
+	        </if>
+	    ORDER BY MEMB_NM ASC
 	</select>
 	<select id="countMemberByMembSerNo" resultType="int" parameterType="String">
 	    SELECT COUNT(*)
@@ -459,4 +460,20 @@
 	        
 	    )
 	</insert>
+	<update id="updateMemberPoint" parameterType="java.util.Map">
+	    <choose>
+	        <!-- usedPoint 파라미터가 전달된 경우 -->
+	        <when test="USED_POINT != null">
+	            UPDATE MEMB_TBL
+	            SET POINT = POINT - CAST(#{USED_POINT} AS INTEGER)
+	            WHERE MEMB_SER_NO = #{MEMB_NO}
+	        </when>
+	        <!-- savedPoint 파라미터가 전달된 경우 -->
+	        <when test="SAVE_POINT != null">
+	            UPDATE MEMB_TBL
+	            SET POINT = POINT + #{SAVE_POINT}
+	            WHERE MEMB_SER_NO = #{MEMB_NO}
+	        </when>
+	    </choose>
+	</update>
 </mapper>

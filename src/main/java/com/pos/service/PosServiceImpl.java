@@ -93,7 +93,10 @@ public class PosServiceImpl implements PosService {
 	        posDao.insertSalesPayment(salesProductVO);
 	    } 
 	    
-	    insertPosMoney(salesData); 
+	    insertPosMoney(salesData);
+	    
+	    posDao.updatedMembPoint(salesData);
+	     
 	}
 	
 	private void setSerNoForEachProduct(List<SalesProdVo> salesProductList) {
@@ -416,49 +419,4 @@ public class PosServiceImpl implements PosService {
 		return posDao.getMaxMembNo();
 	}
 	
-	/*
-	// 거래처등록
-	public int InsertManagement(ClientVo clientVo) {
-		return posDao.InsertManagement(clientVo);
-	}
-	
-	// 상품등록
-	public int InsertProduct(ProdVo proVo) {
-		return posDao.InsertProduct(proVo);
-	}
-	
-	// 시재금 등록
-	public int InsertPosMoney(VaultCashVo cashVo) {
-		return posDao.InsertPosMoney(cashVo);
-	}
-	
-	// 최종잔액 select
-	public String TotalMoney(VaultCashVo cashVo) {
-		return posDao.TotalMoney(cashVo);
-	}
-	
-	// 계산
-	public void InsertSales(SalesVo salesVo, SalesProdVo prodVo, SalesPayVo payVo) {
-		posDao.InsertSales(salesVo);
-		posDao.InsertProd(prodVo);
-		posDao.InsertPay(payVo);
-		
-	}
-	
-	// 날짜별 판매 조회
-	public List<Map<String, Object>> selectSales(List<Map<String, Object>> selectSales) {
-		return posDao.selectSales(selectSales);
-	}
-	
-	// 판매상품 상세 조회
-	public List<Map<String, Object>> selectOne(List<Map<String, Object>> selectOne) {
-		return posDao.selectOne(selectOne);
-	}
-	
-	
-	// 고객 정보 조회
-	public List<Map<String, Object>> selectMember(List<Map<String, Object>> selectMember) {
-		return posDao.selectOne(selectMember);
-	}
-	/*/
 }
