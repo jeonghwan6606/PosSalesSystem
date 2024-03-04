@@ -56,7 +56,7 @@ public class PosController {
 	    String cancelledItemsJson = req.getParameter("cancelledItems");
 	    List<Map<String, Object>> cancelledItemsList = new ArrayList<>();
 	    if (cancelledItemsJson != null) {
-	        JSONArray cancelledItemsArray = new JSONArray(cancelledItemsJson);
+	       JSONArray cancelledItemsArray = new JSONArray(cancelledItemsJson);
 	        // JSONArray를 List<Map<String, Object>>로 변환
 	        for (int i = 0; i < cancelledItemsArray.length(); i++) {
 	            JSONObject item = cancelledItemsArray.getJSONObject(i);
