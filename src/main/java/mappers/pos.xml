@@ -227,26 +227,7 @@
         	AND SALES_PAY_TBL.SALES_TY = #{salesTy}
         </if>		
 	</select>
-	
-	<select id="getCustList" resultType="java.util.Map" parameterType="map">
-	    SELECT
-	        CUST.*,
-	        BILL.BNK_CD AS BNK_CD,
-	        BILL.BILL_ADR1 AS BILL_ADR1,
-	        BILL.BILL_ADR2 AS BILL_ADR2,
-	        BILL.STL_ACT AS STL_ACT,
-	        BNK_NM_CODE_NM.CODE_NM AS BNK_NM
-	    FROM
-	        CUST
-	        LEFT JOIN BILL ON CUST.CUST_NO = BILL.CUST_NO
-	        LEFT JOIN COMM_CODE_DTL BNK_NM_CODE_NM ON BNK_NM_CODE_NM.GROUP_CD = 'C003' AND BILL.BNK_CD = BNK_NM_CODE_NM.CODE
-	    WHERE
-	        CUST.HG_NM = #{hgNm}
-	        AND CUST.BIRTH_D = #{birthD}
-	        <if test="hdpNo != null and hdpNo != ''">
-	        AND CUST.HDP_NO = #{hdpNo}
-	        </if>
-	</select>	
+		
 	<!-- 판매 취소 관련 쿼리 -->
 	<update id="updateCancelTypeForFullCancel">
 	    UPDATE SALES_TBL

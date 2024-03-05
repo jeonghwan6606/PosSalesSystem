@@ -170,16 +170,22 @@ public class PosController {
 
 		int result = posService.SimInsertCust(paramMap);
 		String message;
+		String chkDuplicate;
+		
 		if (result == 0) {
 			// 이미 회원 가입된 경우
 			message = "이미 회원으로 등록되어 있습니다.";
+			chkDuplicate = "0";
 		} else {
 			// 회원 가입 성공
 			message = "회원 등록이 성공적으로 완료되었습니다.";
+			chkDuplicate = "1";
 		}
+		
+		
 		// 응답 데이터셋에 메시지 추가
+		dataRequest.setResponse("result", chkDuplicate);
 		dataRequest.setResponse("message", message);
-
 		// JSON 형식의 응답을 반환합니다.
 		return new JSONDataView();
 	}
@@ -639,7 +645,8 @@ public class PosController {
 	    }
 	    // 응답 데이터셋에 메시지 추가
 	    dataRequest.setResponse("message", message);
-
+	    dataRequest.setResponse("result", result);
+	    
 	    // JSON 형식의 응답을 반환합니다.
 	    return new JSONDataView();
 	}
