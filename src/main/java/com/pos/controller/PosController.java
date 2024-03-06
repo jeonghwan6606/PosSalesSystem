@@ -651,65 +651,37 @@ public class PosController {
 	    return new JSONDataView();
 	}
 
-	/*
-	 * 판매관리 // 판매 조회하는 부분
-	 * 
-	 * @RequestMapping(value = "/PosSalesManage", method = RequestMethod.GET) public
-	 * String selectSales(@RequestBody List<Map<String, Object>> selectSales) {
-	 * 
-	 * //posService.selectSales(selectSales); return "/ui/PosSalesManagement.clx"; }
-	 * 
-	 * // 판매상세부분 // 판매 조회 후 판매 상세내역 표시
-	 * 
-	 * @RequestMapping(value = "/PosSalesManage", method = RequestMethod.GET) public
-	 * String selectOne(@RequestBody List<Map<String, Object>> selectOne) {
-	 * 
-	 * //posService.selectOne(selectOne); return "/ui/PosSalesManagement.clx"; }
-	 * 
-	 * // 포스메인 판매부분 // 계산 버튼 눌렀을 시 인서트 /*@RequestMapping("/PosMain") public String
-	 * insertPosMain() {
-	 * 
-	 * //posService.InsertSales; }
-	 * 
-	 * @RequestMapping("/PosMain") public String selectCust() {
-	 * 
-	 * //posService.selectMember; return ""; }
-	 * 
-	 * 
-	 * 
-	 * /* // 거래처 등록
-	 * 
-	 * @RequestMapping(value = "/PosAccountManagement.do", method =
-	 * RequestMethod.POST) public String insertManagement(ClientVo clientVo) {
-	 * 
-	 * posService.InsertManagement(clientVo); return "/ui/PosMain.clx"; }
-	 * 
-	 * // 상품등록
-	 * 
-	 * @RequestMapping(value = "/PosProductRegit.do", method = RequestMethod.POST)
-	 * public String insertProduct(ProdVo proVo, VaultCashVo cashVo) {
-	 * 
-	 * posService.InsertProduct(proVo); posService.InsertPosMoney(cashVo); return
-	 * "/ui/PosMain.clx"; }
-	 * 
-	 * // 회원등록
-	 * 
-	 * @RequestMapping(value = "/PosCust.do", method = RequestMethod.POST) public
-	 * String insertPosCust(MembVo memVo) {
-	 * 
-	 * posService.InsertPosCust(memVo); return "/ui/PosMain.clx"; }
-	 * 
-	 * // 시재금 부분
-	 * 
-	 * @RequestMapping("/PosMoney") public String insertPosMoney(VaultCashVo cashVo)
-	 * {
-	 * 
-	 * posService.InsertPosMoney(cashVo); return "/ui/PosMain.clx"; }
-	 * 
-	 * // 최종금액 부분
-	 * 
-	 * @RequestMapping("") public String selectPosMoney() {
-	 * 
-	 * return ""; }
-	 */
+	@RequestMapping(value = "/GetProdData.do", method = RequestMethod.POST)
+	public View getProdData(HttpServletRequest request, HttpServletResponse response, DataRequest dataRequest) {
+		JSONObject requestData = dataRequest.getRequestObject();
+
+		String prodCls = requestData.optString("prodCls", null); // null이면 null을 반환
+	    String searchInput = requestData.getString("searchInput");
+	    String clientNm = requestData.getString("clientNm");
+		System.out.println("prodCls: " + prodCls);
+		
+		// Prepare parameters
+		Map<String, String> paramMap = new HashMap<>();
+		paramMap.put("prodCls", prodCls);
+		paramMap.put("searchInput", searchInput);
+		paramMap.put("clientNm", clientNm);	
+
+		System.out.println("paramMap: " + paramMap);
+
+		// Call service to get sales data
+		List<Map<String, Object>> productData = posService.selectProduct(paramMap);
+
+		System.out.println("productData: " + productData);
+		// Prepare response
+		dataRequest.setResponse("productData", productData);
+
+		return new JSONDataView();
+	}
+	
+	@RequestMapping("/PosProductList.do")
+	public UIView productList(HttpServletRequest req, HttpServletResponse res, DataRequest dataReq) throws Exception {
+	    
+	    // 포워드하여 PosMain.clx로 요청 전달
+	    return new UIView("/ui/PosProductList.clx");
+	}
 }

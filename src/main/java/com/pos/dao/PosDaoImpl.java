@@ -223,4 +223,10 @@ public class PosDaoImpl implements PosDao {
 			sqlsession.update("pos.updateMemberPoint", paramMap);
 			return ;
 	    }
+	    
+	    @Override
+	    public List<Map<String, Object>> selectProduct(Map<String, String> param) {
+	        // 여기서 데이터베이스에 쿼리를 실행하여 결과를 맵 형태로 반환
+	    	return sqlsession.selectList("pos.selectProduct",param);
+	    }
 }

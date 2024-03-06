@@ -51,7 +51,8 @@ public interface PosService {
 	 int getMaxMembNo(); 
 	  
 	 int insertCust(Map<String,String> map);
-	 
+	 //--------------------------------조회페이지--------------------------------------
+	 List<Map<String, Object>> selectProduct(Map<String,String> map);
 	/*
 	// 회원등록
 	String InsertPosCust(MembVo memVo);

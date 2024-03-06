@@ -457,4 +457,32 @@
 	        </when>
 	    </choose>
 	</update>
+	
+	<select id="selectProduct" resultType="java.util.Map" parameterType="map">
+	    SELECT
+	        PROD_TBL.*,
+	        CLIENT_TBL.CLIENT_NO,
+	        CLIENT_TBL.CLIENT_NM,
+	    	PROD_CLS_TBL.PROD_CLS_NM
+	    FROM
+	        PROD_TBL
+	    LEFT JOIN
+	    	CLIENT_TBL ON PROD_TBL.CLIENT_NO = CLIENT_TBL.CLIENT_NO    
+	    LEFT JOIN
+	    	PROD_CLS_TBL ON PROD_TBL.PROD_CLS_CD = PROD_CLS_TBL.PROD_CLS_CD
+	    WHERE    
+	    1=1  
+	        <if test="prodCls != null and prodCls != ''">
+	            AND PROD_CLS_NO = #{prodCls}
+	        </if>
+	        <!-- searchInput 주어진 경우에만 조건 추가 -->
+	        <if test="searchInput != null and searchInput != ''">
+	            AND (PROD_TBL.BAR_CODE LIKE '%' || #{searchInput} || '%' OR PROD_TBL.PROD_NM LIKE '%' || #{searchInput} || '%' 
+	             OR PROD_TBL.PROD_CD LIKE '%' || #{searchInput} || '%')
+	        </if>
+	        <if test="clientNm != null and clientNm != ''">
+	            AND CLIENT_TBL.CLIENT_NM = #{clientNm}
+	        </if>
+	    ORDER BY PROD_CD ASC
+	</select>
 </mapper>

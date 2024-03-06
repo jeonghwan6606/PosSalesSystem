@@ -419,4 +419,13 @@ public class PosServiceImpl implements PosService {
 		return posDao.getMaxMembNo();
 	}
 	
+ 	@Override
+	public List<Map<String, Object>> selectProduct(Map<String, String> param){
+		
+		List<Map<String, Object>> productList = posDao.selectProduct(param);
+		
+		System.out.println(productList);
+		
+		return productList;
+	}
 }
