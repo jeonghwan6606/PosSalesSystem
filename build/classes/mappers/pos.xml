@@ -473,7 +473,7 @@
 	    WHERE    
 	    1=1  
 	        <if test="prodCls != null and prodCls != ''">
-	            AND PROD_CLS_NO = #{prodCls}
+	            AND PROD_CLS_TBL.PROD_CLS_CD = #{prodCls}
 	        </if>
 	        <!-- searchInput 주어진 경우에만 조건 추가 -->
 	        <if test="searchInput != null and searchInput != ''">
@@ -481,8 +481,8 @@
 	             OR PROD_TBL.PROD_CD LIKE '%' || #{searchInput} || '%')
 	        </if>
 	        <if test="clientNm != null and clientNm != ''">
-	            AND CLIENT_TBL.CLIENT_NM = #{clientNm}
+	            AND CLIENT_TBL.CLIENT_NM  LIKE '%' || #{clientNm} || '%'
 	        </if>
-	    ORDER BY PROD_CD ASC
+	    ORDER BY PROD_CD DESC
 	</select>
 </mapper>
